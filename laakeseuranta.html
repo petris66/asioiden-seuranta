@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Lääke" />
+  <title>Lääkeseuranta</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%);
+      font-family: Georgia, serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px 32px;
+      color: #e8e0d0;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .header-label {
+      font-size: 11px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #a09880;
+      margin-bottom: 8px;
+    }
+    .clock {
+      font-size: 48px;
+      font-weight: bold;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .date {
+      font-size: 15px;
+      color: #a09880;
+      margin-top: 6px;
+      text-transform: capitalize;
+    }
+
+    .status-banner {
+      border-radius: 14px;
+      padding: 10px 24px;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      margin-bottom: 28px;
+      transition: all 0.4s;
+    }
+    .status-all   { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3);  color: #86efac; }
+    .status-none  { background: rgba(251,113,133,0.10); border: 1px solid rgba(251,113,133,0.25); color: #fca5a5; }
+    .status-part  { background: rgba(251,191,36,0.10);  border: 1px solid rgba(251,191,36,0.25);  color: #fde68a; }
+
+    .cards {
+      display: flex;
+      gap: 14px;
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 36px;
+    }
+    .card {
+      flex: 1;
+      border-radius: 20px;
+      padding: 24px 14px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .card-default { background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.10); }
+    .card-done    { background: rgba(74,222,128,0.08);  border: 1.5px solid rgba(74,222,128,0.35); }
+
+    .card-icon  { font-size: 32px; margin-bottom: 8px; }
+    .card-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #a09880;
+      margin-bottom: 16px;
+    }
+    .check-mark  { font-size: 24px; font-weight: bold; color: #86efac; margin-bottom: 4px; }
+    .taken-time  { font-size: 14px; color: #86efac; margin-bottom: 14px; }
+    .not-taken   { font-size: 13px; color: #6b6358; margin-bottom: 16px; }
+
+    button {
+      font-family: Georgia, serif;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-take {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #e8e0d0;
+      font-size: 13px;
+      padding: 9px 16px;
+    }
+    .btn-take:active { background: rgba(255,255,255,0.15); }
+    .btn-undo {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: #a09880;
+      font-size: 12px;
+      padding: 5px 14px;
+    }
+    .btn-undo:active { background: rgba(255,255,255,0.06); }
+
+    .history-section { width: 100%; max-width: 480px; }
+    .history-title {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #6b6358;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .history-list { display: flex; flex-direction: column; gap: 7px; }
+    .history-row {
+      display: flex;
+      align-items: center;
+      border-radius: 12px;
+      padding: 10px 14px;
+      gap: 10px;
+    }
+    .row-today   { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); }
+    .row-default { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); }
+    .row-label   { flex: 1; font-size: 13px; }
+    .row-today .row-label { color: #e8e0d0; }
+    .row-default .row-label { color: #a09880; }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 12px;
+    }
+    .pill-done    { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.25); color: #86efac; }
+    .pill-missing { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #4a4540; }
+    .pill-icon { font-size: 14px; }
+
+    .footer {
+      font-size: 11px;
+      color: #3d3830;
+      margin-top: 28px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-label">Lääkeseuranta</div>
+    <div class="clock" id="clock">00:00</div>
+    <div class="date" id="date"></div>
+  </div>
+
+  <div class="status-banner" id="status"></div>
+
+  <div class="cards">
+    <div class="card" id="card-aamu">
+      <div class="card-icon">☀️</div>
+      <div class="card-label">Aamu</div>
+      <div id="aamu-content"></div>
+    </div>
+    <div class="card" id="card-ilta">
+      <div class="card-icon">🌙</div>
+      <div class="card-label">Ilta</div>
+      <div id="ilta-content"></div>
+    </div>
+  </div>
+
+  <div class="history-section">
+    <div class="history-title">7 päivän historia</div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+  <div class="footer">Tiedot tallennetaan tähän laitteeseen</div>
+
+  <script>
+    const STORAGE_KEY = "laake_historia";
+
+    function getTodayKey() {
+      return new Date().toISOString().split("T")[0];
+    }
+
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+      catch { return {}; }
+    }
+
+    function saveHistory(h) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr + "T12:00:00");
+      return d.toLocaleDateString("fi-FI", { weekday: "short", day: "numeric", month: "numeric" });
+    }
+
+    function nowTime() {
+      return new Date().toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function merkitse(aika) {
+      const h = getHistory();
+      const today = getTodayKey();
+      h[today] = h[today] || {};
+      h[today][aika] = nowTime();
+      saveHistory(h);
+      render();
+    }
+
+    function peru(aika) {
+      const h = getHistory();
+      const today = getTodayKey();
+      if (h[today]) h[today][aika] = null;
+      saveHistory(h);
+      render();
+    }
+
+    function renderCard(aika, entry) {
+      const taken = entry && entry[aika];
+      const card = document.getElementById("card-" + aika);
+      const content = document.getElementById(aika + "-content");
+      const hint = aika === "aamu" ? "aamulla" : "illalla";
+
+      card.className = "card " + (taken ? "card-done" : "card-default");
+
+      if (taken) {
+        content.innerHTML = `
+          <div class="check-mark">✓</div>
+          <div class="taken-time">${taken}</div>
+          <button class="btn-undo" onclick="peru('${aika}')">Peru</button>
+        `;
+      } else {
+        content.innerHTML = `
+          <div class="not-taken">Ei merkitty</div>
+          <button class="btn-take" onclick="merkitse('${aika}')">Otettu ${hint}</button>
+        `;
+      }
+    }
+
+    function renderStatus(entry) {
+      const el = document.getElementById("status");
+      const aamu = entry && entry.aamu;
+      const ilta = entry && entry.ilta;
+      if (aamu && ilta) {
+        el.className = "status-banner status-all";
+        el.textContent = "✓ Kaikki lääkkeet otettu tänään";
+      } else if (!aamu && !ilta) {
+        el.className = "status-banner status-none";
+        el.textContent = "Ei vielä merkintöjä tänään";
+      } else if (aamu) {
+        el.className = "status-banner status-part";
+        el.textContent = "Aamulääke otettu — iltalääke puuttuu";
+      } else {
+        el.className = "status-banner status-part";
+        el.textContent = "Iltalääke otettu — aamulääke puuttuu";
+      }
+    }
+
+    function renderHistory(history) {
+      const list = document.getElementById("history-list");
+      const today = getTodayKey();
+      const days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        return d.toISOString().split("T")[0];
+      }).reverse();
+
+      list.innerHTML = days.map(day => {
+        const entry = history[day] || {};
+        const isToday = day === today;
+        const label = isToday ? "Tänään" : formatDate(day);
+        const aamuDone = !!entry.aamu;
+        const iltaDone = !!entry.ilta;
+        return `
+          <div class="history-row ${isToday ? "row-today" : "row-default"}">
+            <div class="row-label">${label}</div>
+            <div class="pill ${aamuDone ? "pill-done" : "pill-missing"}">
+              <span class="pill-icon">☀️</span>
+              <span>${entry.aamu || "—"}</span>
+            </div>
+            <div class="pill ${iltaDone ? "pill-done" : "pill-missing"}">
+              <span class="pill-icon">🌙</span>
+              <span>${entry.ilta || "—"}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent =
+        now.toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" });
+      document.getElementById("date").textContent =
+        now.toLocaleDateString("fi-FI", { weekday: "long", day: "numeric", month: "long" });
+    }
+
+    function render() {
+      const history = getHistory();
+      const today = history[getTodayKey()] || {};
+      renderCard("aamu", today);
+      renderCard("ilta", today);
+      renderStatus(today);
+      renderHistory(history);
+    }
+
+    updateClock();
+    render();
+    setInterval(updateClock, 60000);
+  </script>
+</body>
+</html>
