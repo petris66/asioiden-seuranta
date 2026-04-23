@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fi">
 <head>
@@ -7,13 +6,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Seuranta" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIwIiBmaWxsPSIjMWExYTJlIi8+PHBhdGggZD0iTTMwIDE1IEw3MCAxNSBMNzAgMjUgTDU1IDUwIEw3MCA3NSBMN
-  DAgODUgTDMwIDg1IEwzMCA3NSBMNDUgNTAgTDMwIDI1IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U4ZTBkMCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTQ1IDUwIEw1NSA1MCBMN
-  DAgNzAgTDMwIDcwIFoiIGZpbGw9IiM4NmVmYWMiLz48L3N2Zz4=" />
+  <link rel="apple-touch-icon" href="icon.png" />
   <title>Päivittäinen seuranta</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       min-height: 100vh;
       background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%);
@@ -24,12 +20,10 @@
       padding: 48px 16px 32px;
       color: #e8e0d0;
     }
-
     .header { text-align: center; margin-bottom: 24px; }
     .header-label { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #a09880; margin-bottom: 8px; }
     .clock { font-size: 48px; font-weight: bold; letter-spacing: -1px; line-height: 1; }
     .date { font-size: 15px; color: #a09880; margin-top: 6px; text-transform: capitalize; }
-
     .status-banner {
       border-radius: 14px; padding: 10px 24px; font-size: 14px;
       letter-spacing: 0.5px; margin-bottom: 24px; transition: all 0.4s; text-align: center;
@@ -37,9 +31,7 @@
     .status-all  { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3);  color: #86efac; }
     .status-none { background: rgba(251,113,133,0.10); border: 1px solid rgba(251,113,133,0.25); color: #fca5a5; }
     .status-part { background: rgba(251,191,36,0.10);  border: 1px solid rgba(251,191,36,0.25);  color: #fde68a; }
-
     .sections { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; margin-bottom: 32px; }
-
     .section {
       background: rgba(255,255,255,0.04);
       border: 1.5px solid rgba(255,255,255,0.10);
@@ -50,16 +42,13 @@
     .section-title { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #a09880; flex: 1; }
     .section-progress { font-size: 12px; color: #6b6358; }
     .section-progress.done { color: #86efac; }
-
     .task-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-
     .task-row {
       display: flex; align-items: center; gap: 10px;
       background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
       border-radius: 12px; padding: 10px 12px; transition: all 0.2s;
     }
     .task-row.done { background: rgba(74,222,128,0.06); border-color: rgba(74,222,128,0.2); }
-
     .task-check {
       width: 22px; height: 22px; border-radius: 50%;
       border: 1.5px solid rgba(255,255,255,0.2); background: transparent;
@@ -67,18 +56,15 @@
       font-size: 12px; color: #86efac; flex-shrink: 0; transition: all 0.2s;
     }
     .task-check.checked { background: rgba(74,222,128,0.2); border-color: rgba(74,222,128,0.5); }
-
     .task-name { flex: 1; font-size: 14px; color: #e8e0d0; }
     .task-row.done .task-name { color: #86efac; }
     .task-time { font-size: 12px; color: #6b6358; }
     .task-row.done .task-time { color: #86efac; }
-
     .task-delete {
       background: transparent; border: none; color: #4a4540;
       font-size: 18px; cursor: pointer; padding: 2px 4px; line-height: 1; transition: color 0.2s;
     }
     .task-delete:active { color: #fca5a5; }
-
     .add-task { display: flex; gap: 8px; align-items: center; }
     .add-input {
       flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
@@ -94,43 +80,34 @@
       align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
     }
     .add-btn:active { background: rgba(255,255,255,0.15); }
-
     .empty-tasks { font-size: 13px; color: #4a4540; text-align: center; padding: 8px 0; font-style: italic; }
-
     .history-section { width: 100%; max-width: 480px; }
     .history-title { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #6b6358; margin-bottom: 12px; text-align: center; }
     .history-list { display: flex; flex-direction: column; gap: 7px; }
     .history-row { border-radius: 12px; padding: 10px 14px; }
     .row-today   { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); }
     .row-default { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); }
-
     .history-row-header { display: flex; align-items: center; margin-bottom: 6px; }
     .history-date { font-size: 13px; flex: 1; }
     .row-today .history-date { color: #e8e0d0; }
     .row-default .history-date { color: #a09880; }
-
     .history-summary { font-size: 12px; color: #6b6358; }
     .history-summary.all { color: #86efac; }
     .history-summary.part { color: #fde68a; }
-
     .history-tasks { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
     .h-pill { display: flex; align-items: center; gap: 4px; border-radius: 20px; padding: 2px 8px; font-size: 11px; }
     .h-pill.done    { background: rgba(74,222,128,0.10); border: 1px solid rgba(74,222,128,0.2); color: #86efac; }
     .h-pill.missing { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); color: #4a4540; }
-
     .footer { font-size: 11px; color: #3d3830; margin-top: 28px; text-align: center; }
   </style>
 </head>
 <body>
-
   <div class="header">
     <div class="header-label">Päivittäinen seuranta</div>
     <div class="clock" id="clock">00:00</div>
     <div class="date" id="date"></div>
   </div>
-
   <div class="status-banner" id="status"></div>
-
   <div class="sections">
     <div class="section">
       <div class="section-header">
@@ -144,7 +121,6 @@
         <button class="add-btn" onclick="addTask('aamu')">+</button>
       </div>
     </div>
-
     <div class="section">
       <div class="section-header">
         <div class="section-icon">🌙</div>
@@ -158,52 +134,14 @@
       </div>
     </div>
   </div>
-
   <div class="history-section">
     <div class="history-title">7 päivän historia</div>
     <div class="history-list" id="history-list"></div>
   </div>
-
   <div class="footer">Tiedot tallennetaan tähän laitteeseen</div>
-
-  <!-- PWA icon as inline SVG favicon -->
-  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
-    <symbol id="hourglass">
-      <rect width="100" height="100" rx="20" fill="#1a1a2e"/>
-      <g transform="translate(50,50)">
-        <path d="M-18,-32 L18,-32 L18,-24 L6,0 L18,24 L18,32 L-18,32 L-18,24 L-6,0 L-18,-24 Z"
-              fill="none" stroke="#e8e0d0" stroke-width="2.5" stroke-linejoin="round"/>
-        <path d="M-14,26 L14,26 L6,10 L-6,10 Z" fill="#86efac"/>
-        <line x1="-20" y1="-32" x2="20" y2="-32" stroke="#e8e0d0" stroke-width="3" stroke-linecap="round"/>
-        <line x1="-20" y1="32" x2="20" y2="32" stroke="#e8e0d0" stroke-width="3" stroke-linecap="round"/>
-      </g>
-    </symbol>
-  </svg>
-
   <script>
-    // Generate and inject apple-touch-icon as a proper PNG-like SVG data URL
-    (function() {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <rect width="100" height="100" rx="18" fill="#1a1a2e"/>
-        <g transform="translate(50,50)">
-          <line x1="-20" y1="-34" x2="20" y2="-34" stroke="#e8e0d0" stroke-width="4" stroke-linecap="round"/>
-          <line x1="-20" y1="34" x2="20" y2="34" stroke="#e8e0d0" stroke-width="4" stroke-linecap="round"/>
-          <path d="M-17,-34 L17,-34 L17,-26 L5,0 L17,26 L17,34 L-17,34 L-17,26 L-5,0 L-17,-26 Z"
-                fill="none" stroke="#e8e0d0" stroke-width="2.5" stroke-linejoin="round"/>
-          <path d="M-13,28 L13,28 L5,12 L-5,12 Z" fill="#86efac"/>
-          <circle cx="0" cy="-8" r="3" fill="#a09880" opacity="0.6"/>
-        </g>
-      </svg>`;
-      const encoded = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-      const link = document.createElement('link');
-      link.rel = 'apple-touch-icon';
-      link.href = encoded;
-      document.head.appendChild(link);
-    })();
-
     const TASKS_KEY   = "seuranta_tasks";
     const HISTORY_KEY = "seuranta_history";
-
     function getTodayKey() { return new Date().toISOString().split("T")[0]; }
     function nowTime() { return new Date().toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" }); }
     function formatDate(dateStr) {
@@ -224,7 +162,6 @@
     }
     function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
     function getUid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
-
     function addTask(period) {
       const input = document.getElementById("input-" + period);
       const name = input.value.trim();
@@ -235,7 +172,6 @@
       input.value = "";
       render();
     }
-
     function deleteTask(period, taskId) {
       const tasks = loadTasks();
       tasks[period] = tasks[period].filter(t => t.id !== taskId);
@@ -248,7 +184,6 @@
       }
       render();
     }
-
     function toggleTask(period, taskId) {
       const history = loadHistory();
       const today = getTodayKey();
@@ -258,7 +193,6 @@
       saveHistory(history);
       render();
     }
-
     function renderSection(period, tasks, history) {
       const today = getTodayKey();
       const todayEntry = (history[today] && history[today][period]) || {};
@@ -266,7 +200,6 @@
       const progress = document.getElementById("progress-" + period);
       const total = tasks.length;
       const done = tasks.filter(t => todayEntry[t.id]).length;
-
       if (total === 0) {
         progress.textContent = "";
         list.innerHTML = `<div class="empty-tasks">Ei tehtäviä — lisää alla</div>`;
@@ -285,7 +218,6 @@
         </div>`;
       }).join("");
     }
-
     function renderStatus(tasks, history) {
       const today = getTodayKey();
       const todayEntry = history[today] || {};
@@ -308,14 +240,12 @@
         el.textContent = done + "/" + total + " tehty tänään";
       }
     }
-
     function renderHistory(tasks, history) {
       const today = getTodayKey();
       const days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(); d.setDate(d.getDate() - i);
         return d.toISOString().split("T")[0];
       }).reverse();
-
       document.getElementById("history-list").innerHTML = days.map(day => {
         const isToday = day === today;
         const entry = history[day] || {};
@@ -343,13 +273,11 @@
         </div>`;
       }).join("");
     }
-
     function updateClock() {
       const now = new Date();
       document.getElementById("clock").textContent = now.toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" });
       document.getElementById("date").textContent = now.toLocaleDateString("fi-FI", { weekday: "long", day: "numeric", month: "long" });
     }
-
     function render() {
       const tasks = loadTasks();
       const history = loadHistory();
@@ -358,10 +286,8 @@
       renderStatus(tasks, history);
       renderHistory(tasks, history);
     }
-
     document.getElementById("input-aamu").addEventListener("keydown", e => { if (e.key === "Enter") addTask("aamu"); });
     document.getElementById("input-ilta").addEventListener("keydown", e => { if (e.key === "Enter") addTask("ilta"); });
-
     updateClock();
     render();
     setInterval(updateClock, 60000);
