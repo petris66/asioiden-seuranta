@@ -123,6 +123,18 @@
     </div>
     <div class="section">
       <div class="section-header">
+        <div class="section-icon">🌤️</div>
+        <div class="section-title">Päivä</div>
+        <div class="section-progress" id="progress-paiva"></div>
+      </div>
+      <div class="task-list" id="tasks-paiva"></div>
+      <div class="add-task">
+        <input class="add-input" id="input-paiva" type="text" placeholder="Lisää tehtävä..." maxlength="40" />
+        <button class="add-btn" onclick="addTask('paiva')">+</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header">
         <div class="section-icon">🌙</div>
         <div class="section-title">Ilta</div>
         <div class="section-progress" id="progress-ilta"></div>
@@ -142,6 +154,11 @@
   <script>
     const TASKS_KEY   = "seuranta_tasks";
     const HISTORY_KEY = "seuranta_history";
+    const PERIODS = [
+      { key: "aamu",  label: "Aamu",  icon: "☀️" },
+      { key: "paiva", label: "Päivä", icon: "🌤️" },
+      { key: "ilta",  label: "Ilta",  icon: "🌙" },
+    ];
     function getTodayKey() { return new Date().toISOString().split("T")[0]; }
     function nowTime() { return new Date().toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" }); }
     function formatDate(dateStr) {
@@ -152,8 +169,11 @@
       return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
     function loadTasks() {
-      try { return JSON.parse(localStorage.getItem(TASKS_KEY) || '{"aamu":[],"ilta":[]}'); }
-      catch { return { aamu: [], ilta: [] }; }
+      try {
+        const t = JSON.parse(localStorage.getItem(TASKS_KEY) || '{}');
+        PERIODS.forEach(p => { if (!t[p.key]) t[p.key] = []; });
+        return t;
+      } catch { return { aamu: [], paiva: [], ilta: [] }; }
     }
     function saveTasks(t) { localStorage.setItem(TASKS_KEY, JSON.stringify(t)); }
     function loadHistory() {
@@ -222,13 +242,13 @@
       const today = getTodayKey();
       const todayEntry = history[today] || {};
       let total = 0, done = 0;
-      ["aamu","ilta"].forEach(p => {
-        tasks[p].forEach(t => { total++; if (todayEntry[p] && todayEntry[p][t.id]) done++; });
+      PERIODS.forEach(p => {
+        tasks[p.key].forEach(t => { total++; if (todayEntry[p.key] && todayEntry[p.key][t.id]) done++; });
       });
       const el = document.getElementById("status");
       if (total === 0) {
         el.className = "status-banner status-none";
-        el.textContent = "Lisää tehtäviä aamuun tai iltaan";
+        el.textContent = "Lisää tehtäviä aamuun, päivään tai iltaan";
       } else if (done === total) {
         el.className = "status-banner status-all";
         el.textContent = "✓ Kaikki tehty tänään — hyvää työtä!";
@@ -251,18 +271,18 @@
         const entry = history[day] || {};
         let total = 0, done = 0;
         const pills = [];
-        ["aamu","ilta"].forEach(p => {
-          tasks[p].forEach(t => {
+        PERIODS.forEach(p => {
+          tasks[p.key].forEach(t => {
             total++;
-            const time = entry[p] && entry[p][t.id];
+            const time = entry[p.key] && entry[p.key][t.id];
             if (time) done++;
-            pills.push({ name: t.name, time, period: p });
+            pills.push({ name: t.name, time, icon: p.icon });
           });
         });
         const summaryClass = "history-summary" + (done === total && total > 0 ? " all" : done > 0 ? " part" : "");
         const summaryText = total === 0 ? "" : done + "/" + total + " tehty";
         const pillsHtml = pills.map(p =>
-          `<div class="h-pill ${p.time ? "done" : "missing"}">${p.period === "aamu" ? "☀️" : "🌙"} ${escHtml(p.name)}${p.time ? " " + p.time : ""}</div>`
+          `<div class="h-pill ${p.time ? "done" : "missing"}">${p.icon} ${escHtml(p.name)}${p.time ? " " + p.time : ""}</div>`
         ).join("");
         return `<div class="history-row ${isToday ? "row-today" : "row-default"}">
           <div class="history-row-header">
@@ -281,12 +301,12 @@
     function render() {
       const tasks = loadTasks();
       const history = loadHistory();
-      renderSection("aamu", tasks.aamu, history);
-      renderSection("ilta", tasks.ilta, history);
+      PERIODS.forEach(p => renderSection(p.key, tasks[p.key], history));
       renderStatus(tasks, history);
       renderHistory(tasks, history);
     }
     document.getElementById("input-aamu").addEventListener("keydown", e => { if (e.key === "Enter") addTask("aamu"); });
+    document.getElementById("input-paiva").addEventListener("keydown", e => { if (e.key === "Enter") addTask("paiva"); });
     document.getElementById("input-ilta").addEventListener("keydown", e => { if (e.key === "Enter") addTask("ilta"); });
     updateClock();
     render();
