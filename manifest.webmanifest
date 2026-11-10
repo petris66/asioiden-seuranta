@@ -1,0 +1,11 @@
+{
+  "id": "./asianseuranta.html",
+  "name": "Asioiden seuranta",
+  "short_name": "Seuranta",
+  "start_url": "./asianseuranta.html",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#1a1a2e",
+  "background_color": "#1a1a2e",
+  "icons": [{ "src": "./icon.png", "sizes": "any", "type": "image/png" }]
+}

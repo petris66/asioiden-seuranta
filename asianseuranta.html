@@ -133,6 +133,17 @@
 
     .footer { font-size: 11px; color: #3d3830; margin-top: 28px; text-align: center; }
   </style>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <style>
+    .tools { box-sizing: border-box; width: min(100%, 480px); margin-top: 16px; }
+    .tools summary { cursor: pointer; }
+    .tools label { display: block; margin-top: 10px; }
+    .tools input { display: block; box-sizing: border-box; width: 100%; font-size: 16px; }
+    .tools button { margin: 8px 5px 0 0; padding: 6px 9px; }
+    .tools p { margin: 8px 0 0; font-size: 14px; }
+    .notify-task { background: transparent; border: 0; cursor: pointer; font-size: 18px; padding: 4px; }
+    .notify-task[aria-pressed="false"] { opacity: .55; filter: grayscale(1); }
+  </style>
 </head>
 <body>
 
@@ -231,6 +242,26 @@
     <div class="history-title">7 päivän historia</div>
     <div class="history-list" id="history-list"></div>
   </div>
+
+  <details class="section tools" id="push-settings">
+    <summary>Ilmoitukset</summary>
+    <p>Ilmoitus tulee päivittäin tehtävän alkuaikana. Ilman omaa aikaa käytetään osion alkuaikaa.
+      Palveluun tallennetaan vain ilmoitettavien tehtävien nimet ja kellonajat sekä tämän puhelimen ilmoitustilaus.</p>
+    <label>Ajastuspalvelun osoite <input type="url" id="push-server" autocapitalize="off" /></label>
+    <label>Yhdistämiskoodi <input type="password" id="push-token" autocomplete="off" /></label>
+    <button type="button" id="push-connect">Yhdistä palveluun</button>
+    <button type="button" id="push-activate" disabled>Salli ilmoitukset</button>
+    <button type="button" id="push-test" disabled>Lähetä testi-ilmoitus</button>
+    <button type="button" id="push-sync" disabled>Päivitä ilmoitukset</button>
+    <p id="push-status" role="status"></p>
+  </details>
+  <details class="section tools">
+    <summary>Siirrä tiedot</summary>
+    <p>Tallenna kopio Safarissa. Avaa kotinäyttösovellus ja palauta sama tiedosto siellä.</p>
+    <button type="button" id="backup-save">Tallenna varmuuskopio</button>
+    <label>Palauta varmuuskopio <input type="file" id="backup-open" accept=".json,application/json" /></label>
+    <p id="backup-status" role="status"></p>
+  </details>
 
   <div class="footer">Tiedot tallennetaan tähän laitteeseen</div>
 
@@ -340,6 +371,7 @@
       const tasks = loadTasks();
       tasks[period] = tasks[period].filter(t => t.id !== taskId);
       saveTasks(tasks);
+      window.seurantaPush?.sync();
       const history = loadHistory();
       const today = getTodayKey();
       if (history[today] && history[today][period]) {
@@ -386,6 +418,7 @@
             ${plannedTime ? `<div class="task-schedule">Klo ${escHtml(plannedTime)}</div>` : ""}
           </div>
           <div class="task-time">${takenTime ? "Tehty " + takenTime : ""}</div>
+          ${window.seurantaPush?.button(task, period) || ""}
           <button class="task-delete" onclick="deleteTask('${period}','${task.id}')">×</button>
         </div>`;
       }).join("");
@@ -478,6 +511,8 @@
           currentRange[endpoint] = timeInput.value;
           currentSchedule[period] = currentRange;
           localStorage.setItem(SCHEDULE_KEY, JSON.stringify(currentSchedule));
+          render();
+          window.seurantaPush?.sync();
         });
       });
     });
@@ -486,5 +521,6 @@
     render();
     setInterval(updateClock, 60000);
   </script>
+  <script src="./seuranta-push.js" defer></script>
 </body>
 </html>
