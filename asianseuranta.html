@@ -391,6 +391,18 @@
       render();
     }
 
+    // Järjestä tehtävät suunnitellun alkamisajan mukaan.
+    // Oma aika ohittaa osion alkamisajan. Sama aika säilyttää lisäysjärjestyksen.
+    function plannedStart(task, period, schedule) {
+      return getTimeRange(task.schedule).start || getTimeRange(schedule[period]).start || "";
+    }
+
+    function sortTasksByPlannedTime(tasks, period, schedule) {
+      return [...tasks].sort((a, b) =>
+        plannedStart(a, period, schedule).localeCompare(plannedStart(b, period, schedule), "fi")
+      );
+    }
+
     function renderSection(period, tasks, history) {
       const today = getTodayKey();
       const todayEntry = (history[today] && history[today][period]) || {};
@@ -406,7 +418,7 @@
       }
       progress.textContent = done + "/" + total;
       progress.className = "section-progress" + (done === total ? " done" : "");
-      list.innerHTML = tasks.map(task => {
+      list.innerHTML = sortTasksByPlannedTime(tasks, period, loadSchedule()).map(task => {
         const takenTime = todayEntry[task.id];
         const isDone = !!takenTime;
         const { start, end } = getTimeRange(task.schedule);
@@ -459,17 +471,18 @@
         const entry = history[day] || {};
         let total = 0, done = 0;
         const pills = [];
+        const currentSchedule = loadSchedule();
         PERIODS.forEach(p => {
           tasks[p].forEach(t => {
             total++;
             const time = entry[p] && entry[p][t.id];
             if (time) done++;
-            pills.push({ name: t.name, time, period: p });
+            pills.push({ name: t.name, time, period: p, planned: plannedStart(t, p, currentSchedule) });
           });
         });
         const summaryClass = "history-summary" + (done === total && total > 0 ? " all" : done > 0 ? " part" : "");
         const summaryText = total === 0 ? "" : done + "/" + total + " tehty";
-        const pillsHtml = pills.map(p =>
+        const pillsHtml = pills.sort((a, b) => a.planned.localeCompare(b.planned, "fi")).map(p =>
           `<div class="h-pill ${p.time ? "done" : "missing"}">${PERIOD_ICONS[p.period]} ${escHtml(p.name)}${p.time ? " " + p.time : ""}</div>`
         ).join("");
         return `<div class="history-row ${isToday ? "row-today" : "row-default"}">
