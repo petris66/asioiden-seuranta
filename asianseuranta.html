@@ -310,7 +310,13 @@
     const PERIODS = Object.keys(PERIOD_ICONS);
 
     function getTodayKey() { return new Date().toISOString().split("T")[0]; }
-    function nowTime() { return new Date().toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" }); }
+    function formatClock(value) {
+      return String(value ?? "").trim().replace(/^(\d{1,2})[.:](\d{2})$/, (_, h, m) => h.padStart(2, "0") + ":" + m);
+    }
+    function nowTime() {
+      const now = new Date();
+      return String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+    }
     function formatDate(dateStr) {
       const d = new Date(dateStr + "T12:00:00");
       return d.toLocaleDateString("fi-FI", { weekday: "short", day: "numeric", month: "numeric" });
@@ -397,7 +403,7 @@
     // Järjestä tehtävät suunnitellun alkamisajan mukaan.
     // Oma aika ohittaa osion alkamisajan. Sama aika säilyttää lisäysjärjestyksen.
     function plannedStart(task, period, schedule) {
-      return getTimeRange(task.schedule).start || getTimeRange(schedule[period]).start || "";
+      return formatClock(getTimeRange(task.schedule).start || getTimeRange(schedule[period]).start || "");
     }
 
     function sortTasksByPlannedTime(tasks, period, schedule) {
@@ -410,9 +416,9 @@
       const history = loadHistory();
       const current = history[day]?.[period]?.[taskId];
       if (!current) return;
-      const value = prompt("Korjaa kuittausaika (TT:MM). Tyhjennä kenttä peruuttaaksesi kuittauksen.", current);
+      const value = prompt("Korjaa kuittausaika (TT:MM). Tyhjennä kenttä peruuttaaksesi kuittauksen.", formatClock(current));
       if (value === null) return;
-      const updated = value.trim();
+      const updated = formatClock(value);
       if (updated && !/^([01]\d|2[0-3]):[0-5]\d$/.test(updated)) {
         alert("Anna kellonaika muodossa TT:MM, esimerkiksi 08:15.");
         return;
@@ -447,7 +453,7 @@
         return `${heading}<div class="task-row ${isDone ? "done" : ""}">
           <button class="task-check ${isDone ? "checked" : ""}" onclick="toggleTask('${period}','${task.id}')" aria-label="Muuta tehtävän tilaa">${isDone ? "✓" : ""}</button>
           <div class="task-info"><div class="task-name">${escHtml(task.name)}</div></div>
-          <div class="task-time">${isDone ? `<button class="edit-done" onclick="editCompletion('${today}','${period}','${task.id}')" title="Muokkaa kuittausaikaa">Tehty ${escHtml(String(takenTime))}</button>` : ""}</div>
+          <div class="task-time">${isDone ? `<button class="edit-done" onclick="editCompletion('${today}','${period}','${task.id}')" title="Muokkaa kuittausaikaa">Tehty ${escHtml(formatClock(takenTime))}</button>` : ""}</div>
           ${window.seurantaPush?.button(task, period) || ""}
           <button class="task-delete" onclick="deleteTask('${period}','${task.id}')">×</button>
         </div>`;
@@ -501,7 +507,7 @@
         const summaryClass = "history-summary" + (done === total && total > 0 ? " all" : done > 0 ? " part" : "");
         const summaryText = total === 0 ? "" : done + "/" + total + " tehty";
         const pillsHtml = pills.sort((a, b) => a.planned.localeCompare(b.planned, "fi")).map(p =>
-          `<div class="h-pill ${p.time ? "done" : "missing"}">${PERIOD_ICONS[p.period]} ${escHtml(p.name)}${p.time ? ` <button onclick="editCompletion('${day}','${p.period}','${p.id}')" title="Muokkaa kuittausaikaa">${escHtml(String(p.time))}</button>` : ""}</div>`
+          `<div class="h-pill ${p.time ? "done" : "missing"}">${PERIOD_ICONS[p.period]} ${escHtml(p.name)}${p.time ? ` <button onclick="editCompletion('${day}','${p.period}','${p.id}')" title="Muokkaa kuittausaikaa">${escHtml(formatClock(p.time))}</button>` : ""}</div>`
         ).join("");
         return `<div class="history-row ${isToday ? "row-today" : "row-default"}">
           <div class="history-row-header">
@@ -515,7 +521,7 @@
 
     function updateClock() {
       const now = new Date();
-      document.getElementById("clock").textContent = now.toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" });
+      document.getElementById("clock").textContent = nowTime();
       document.getElementById("date").textContent = now.toLocaleDateString("fi-FI", { weekday: "long", day: "numeric", month: "long" });
     }
 
