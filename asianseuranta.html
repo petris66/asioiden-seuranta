@@ -60,6 +60,9 @@
     }
 
     .task-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .time-group-heading { font-size: 22px; font-weight: bold; color: #e8e0d0; margin: 12px 2px 4px; }
+    .edit-done { border: 0; background: transparent; color: #86efac; cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .h-pill button { border: 0; background: transparent; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; }
 
     .task-row {
       display: flex; align-items: center; gap: 10px;
@@ -403,33 +406,48 @@
       );
     }
 
+    function editCompletion(day, period, taskId) {
+      const history = loadHistory();
+      const current = history[day]?.[period]?.[taskId];
+      if (!current) return;
+      const value = prompt("Korjaa kuittausaika (TT:MM). Tyhjennä kenttä peruuttaaksesi kuittauksen.", current);
+      if (value === null) return;
+      const updated = value.trim();
+      if (updated && !/^([01]\d|2[0-3]):[0-5]\d$/.test(updated)) {
+        alert("Anna kellonaika muodossa TT:MM, esimerkiksi 08:15.");
+        return;
+      }
+      history[day][period][taskId] = updated || null;
+      saveHistory(history);
+      render();
+    }
+
     function renderSection(period, tasks, history) {
       const today = getTodayKey();
-      const todayEntry = (history[today] && history[today][period]) || {};
+      const todayEntry = history[today]?.[period] || {};
       const list = document.getElementById("tasks-" + period);
       const progress = document.getElementById("progress-" + period);
       const total = tasks.length;
       const done = tasks.filter(t => todayEntry[t.id]).length;
-
-      if (total === 0) {
+      if (!total) {
         progress.textContent = "";
         list.innerHTML = `<div class="empty-tasks">Ei tehtäviä — lisää alla</div>`;
         return;
       }
       progress.textContent = done + "/" + total;
       progress.className = "section-progress" + (done === total ? " done" : "");
-      list.innerHTML = sortTasksByPlannedTime(tasks, period, loadSchedule()).map(task => {
+      const currentSchedule = loadSchedule();
+      let previousTime = null;
+      list.innerHTML = sortTasksByPlannedTime(tasks, period, currentSchedule).map(task => {
         const takenTime = todayEntry[task.id];
         const isDone = !!takenTime;
-        const { start, end } = getTimeRange(task.schedule);
-        const plannedTime = end ? start + "–" + end : start;
-        return `<div class="task-row ${isDone ? "done" : ""}">
-          <button class="task-check ${isDone ? "checked" : ""}" onclick="toggleTask('${period}','${task.id}')">${isDone ? "✓" : ""}</button>
-          <div class="task-info">
-            <div class="task-name">${escHtml(task.name)}</div>
-            ${plannedTime ? `<div class="task-schedule">Klo ${escHtml(plannedTime)}</div>` : ""}
-          </div>
-          <div class="task-time">${takenTime ? "Tehty " + takenTime : ""}</div>
+        const time = plannedStart(task, period, currentSchedule);
+        const heading = time !== previousTime ? `<div class="time-group-heading">${time ? escHtml(time) : "Ei kellonaikaa"}</div>` : "";
+        previousTime = time;
+        return `${heading}<div class="task-row ${isDone ? "done" : ""}">
+          <button class="task-check ${isDone ? "checked" : ""}" onclick="toggleTask('${period}','${task.id}')" aria-label="Muuta tehtävän tilaa">${isDone ? "✓" : ""}</button>
+          <div class="task-info"><div class="task-name">${escHtml(task.name)}</div></div>
+          <div class="task-time">${isDone ? `<button class="edit-done" onclick="editCompletion('${today}','${period}','${task.id}')" title="Muokkaa kuittausaikaa">Tehty ${escHtml(String(takenTime))}</button>` : ""}</div>
           ${window.seurantaPush?.button(task, period) || ""}
           <button class="task-delete" onclick="deleteTask('${period}','${task.id}')">×</button>
         </div>`;
@@ -477,13 +495,13 @@
             total++;
             const time = entry[p] && entry[p][t.id];
             if (time) done++;
-            pills.push({ name: t.name, time, period: p, planned: plannedStart(t, p, currentSchedule) });
+            pills.push({ id: t.id, name: t.name, time, period: p, planned: plannedStart(t, p, currentSchedule) });
           });
         });
         const summaryClass = "history-summary" + (done === total && total > 0 ? " all" : done > 0 ? " part" : "");
         const summaryText = total === 0 ? "" : done + "/" + total + " tehty";
         const pillsHtml = pills.sort((a, b) => a.planned.localeCompare(b.planned, "fi")).map(p =>
-          `<div class="h-pill ${p.time ? "done" : "missing"}">${PERIOD_ICONS[p.period]} ${escHtml(p.name)}${p.time ? " " + p.time : ""}</div>`
+          `<div class="h-pill ${p.time ? "done" : "missing"}">${PERIOD_ICONS[p.period]} ${escHtml(p.name)}${p.time ? ` <button onclick="editCompletion('${day}','${p.period}','${p.id}')" title="Muokkaa kuittausaikaa">${escHtml(String(p.time))}</button>` : ""}</div>`
         ).join("");
         return `<div class="history-row ${isToday ? "row-today" : "row-default"}">
           <div class="history-row-header">
